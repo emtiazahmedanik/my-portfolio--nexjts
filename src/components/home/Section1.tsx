@@ -17,16 +17,19 @@ const HomeSection1 = ({ id }: Readonly<{ id: string }>) => {
       <ConstrainedBox classNames="px-4 py-8 pt-16 z-20 items-center justify-center">
         <Column classNames="w-full items-center justify-center">
           <div className="inline-flex items-center">
-            <p className="text-2xl/normal sm:text-3xl/normal md:text-5xl/normal lg:text-6xl/normal xl:text-7xl/normal dark:text-[var(--textColor)] text-[var(--textColor)] font-bold text-center">
-              Hi there, I am
-            </p>
-            <FlipWords
-              words={["Emtiaz Ahmed.", "@emtiazahmed."]}
-              className="text-2xl/normal sm:text-3xl/normal md:text-5xl/normal lg:text-6xl/normal xl:text-7xl/normal dark:text-[var(--primaryColor)] text-[var(--primaryColor)] font-bold text-center"
-            />
+            <h1 className="text-2xl/normal sm:text-3xl/normal md:text-5xl/normal lg:text-6xl/normal xl:text-7xl/normal dark:text-[var(--textColor)] text-[var(--textColor)] font-bold text-center">
+              Hi there, I am{" "}
+              <span className="dark:text-[var(--primaryColor)] text-[var(--primaryColor)]">
+                <FlipWords
+                  words={["Emtiaz Ahmed.", "@emtiazahmed."]}
+                  className="text-2xl/normal sm:text-3xl/normal md:text-5xl/normal lg:text-6xl/normal xl:text-7xl/normal font-bold text-center dark:text-[var(--primaryColor)] text-[var(--primaryColor)]"
+                />
+              </span>
+            </h1>
           </div>
+
           <p className="text-sm/normal md:text-base/normal dark:text-[var(--textColorLight)] text-[var(--textColorLight)]">
-           Flutter Developer 💻 SDE 🛠️ Open Source 🌍
+            Flutter Developer 💻 SDE 🛠️ Open Source 🌍
           </p>
 
           <div className="gap-4 mt-12 lg:mt-16 flex flex-col md:flex-row">
