@@ -4,10 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 4000",
-    "build": "next build",
+    "build": "next build && next export",
     "start": "next start",
-    "lint": "next lint",
-    "push": "git add -A && git commit -m \"Update Changes & Bug Fixes\" && git push origin master"
+    "lint": "next lint"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.6.0",
