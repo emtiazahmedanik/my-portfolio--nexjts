@@ -2,6 +2,9 @@ import { adminDb } from '@/lib/firebase-admin';
 import { NextResponse } from 'next/server';
 import { IBlogPost } from '@/types/blog';
 
+// Force dynamic rendering - don't pre-render this route
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   request: Request,
   { params }: { params: { id: string } }
