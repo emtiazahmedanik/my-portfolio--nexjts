@@ -1,4 +1,4 @@
-import { adminDb } from '@/lib/firebase-admin';
+import { initializeFirebase } from '@/lib/firebase-admin';
 import { NextResponse } from 'next/server';
 import { IBlogPost } from '@/types/blog';
 
@@ -10,6 +10,14 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    const adminDb = initializeFirebase();
+    if (!adminDb) {
+      return NextResponse.json(
+        { error: 'Firebase not configured. Please add environment variables.' },
+        { status: 503 }
+      );
+    }
+
     const { id } = params;
     
     const docSnapshot = await adminDb.collection('blogs').doc(id).get();

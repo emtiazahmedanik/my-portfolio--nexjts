@@ -1,86 +1,95 @@
-'use client';
-
-import { useEffect, useState } from 'react';
 import { IBlogPost } from '@/types/blog';
-import BlogList from '@/components/blog/BlogList';
-import BlogModal from '@/components/blog/BlogModal';
+import BlogListClient from '@/components/blog/BlogListClient';
 import PageBox from '@/components/core/PageBox';
 import SectionTitle from '@/components/common/SectionTitle';
-import { motion } from 'framer-motion';
+import { initializeFirebase } from '@/lib/firebase-admin';
 
-export default function BlogPage() {
-  const [blogs, setBlogs] = useState<IBlogPost[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [selectedBlog, setSelectedBlog] = useState<IBlogPost | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+// Revalidate every 1 hour (3600 seconds) for ISR
+export const revalidate = 3600;
 
-  useEffect(() => {
-    const fetchBlogs = async () => {
-      try {
-        setIsLoading(true);
-        const response = await fetch('/api/blogs');
-        if (!response.ok) {
-          throw new Error('Failed to fetch blogs');
-        }
-        const data = await response.json();
-        setBlogs(data);
-      } catch (error) {
-        console.error('Error fetching blogs:', error);
-        setBlogs([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+async function fetchBlogs(): Promise<IBlogPost[]> {
+  try {
+    const adminDb = initializeFirebase();
+    if (!adminDb) {
+      console.error('Firebase not initialized');
+      return [];
+    }
 
-    fetchBlogs();
-  }, []);
+    const blogsSnapshot = await adminDb
+      .collection('blogs')
+      .orderBy('createdAt', 'desc')
+      .get();
 
-  const handleBlogClick = (blog: IBlogPost) => {
-    setSelectedBlog(blog);
-    setIsModalOpen(true);
-  };
+    const blogs: IBlogPost[] = [];
+    blogsSnapshot.forEach((doc: any) => {
+      const data = doc.data() as any;
+      blogs.push({
+        id: doc.id,
+        title: data?.title || '',
+        content: data?.content || '',
+        createdAt: data?.createdAt?.toDate?.() || new Date(),
+        updatedAt: data?.updatedAt?.toDate?.() || new Date(),
+      });
+    });
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setTimeout(() => setSelectedBlog(null), 300);
+    return blogs;
+  } catch (error) {
+    console.error('Error fetching blogs:', error);
+    return [];
+  }
+}
+
+export default async function BlogPage() {
+  const blogs = await fetchBlogs();
+
+  // JSON-LD structured data for SEO
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Blog',
+    name: "Emtiaz Ahmed's Blog",
+    description: 'Web and mobile development insights',
+    url: 'https://devemtiaz.tech/blog',
+    author: {
+      '@type': 'Person',
+      name: 'Emtiaz',
+      url: 'https://devemtiaz.tech',
+    },
+    blogPost: blogs.map((blog) => ({
+      '@type': 'BlogPosting',
+      headline: blog.title,
+      description: blog.content.substring(0, 160),
+      datePublished: new Date(blog.createdAt).toISOString(),
+      dateModified: new Date(blog.updatedAt).toISOString(),
+      url: `https://devemtiaz.tech/blog#${blog.id}`,
+      author: {
+        '@type': 'Person',
+        name: 'Emtiaz',
+      },
+    })),
   };
 
   return (
-    <PageBox>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.6 }}
-        className="w-full py-20"
-      >
-        <div className="max-w-4xl mx-auto px-4 md:px-0">
-          <div className="text-center mb-12">
-            <SectionTitle>Blog</SectionTitle>
-            <p className="text-gray-400 mt-4 text-sm md:text-base">
-              Thoughts, tutorials, and insights about web development
-            </p>
-          </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="mt-12"
-          >
-            <BlogList
-              blogs={blogs}
-              onBlogClick={handleBlogClick}
-              isLoading={isLoading}
-            />
-          </motion.div>
-        </div>
-      </motion.div>
-
-      <BlogModal
-        blog={selectedBlog}
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-    </PageBox>
+      <PageBox>
+        <div className="w-full py-20">
+          <div className="max-w-4xl mx-auto px-4 md:px-0">
+            <div className="text-center mb-12">
+              <SectionTitle>Emtiaz Ahmed's Blog</SectionTitle>
+              <p className="text-gray-400 mt-4 text-sm md:text-base">
+                Web and mobile development insights
+              </p>
+            </div>
+
+            <div className="mt-12">
+              <BlogListClient blogs={blogs} />
+            </div>
+          </div>
+        </div>
+      </PageBox>
+    </>
   );
 }

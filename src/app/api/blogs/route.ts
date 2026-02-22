@@ -1,4 +1,4 @@
-import { adminDb } from '@/lib/firebase-admin';
+import { initializeFirebase } from '@/lib/firebase-admin';
 import { NextResponse } from 'next/server';
 import { IBlogPost } from '@/types/blog';
 
@@ -7,10 +7,18 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
+    const adminDb = initializeFirebase();
+    if (!adminDb) {
+      return NextResponse.json(
+        { error: 'Firebase not configured. Please add environment variables.' },
+        { status: 503 }
+      );
+    }
+
     const blogsSnapshot = await adminDb.collection('blogs').orderBy('createdAt', 'desc').get();
     
     const blogs: IBlogPost[] = [];
-    blogsSnapshot.forEach((doc) => {
+    blogsSnapshot.forEach((doc: any) => {
       const data = doc.data() as any;
       blogs.push({
         id: doc.id,

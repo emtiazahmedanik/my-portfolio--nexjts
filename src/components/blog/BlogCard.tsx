@@ -25,12 +25,14 @@ const BlogCard = ({ blog, onReadMore }: BlogCardProps) => {
   };
 
   return (
-    <motion.div
+    <motion.article
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
       className="p-6 rounded-lg border border-[rgba(255,255,255,0.10)] bg-[var(--bgColor)] hover:border-[var(--primaryColor)] transition-all duration-300 cursor-pointer group"
       onClick={() => onReadMore(blog)}
+      role="article"
+      aria-label={`Blog post: ${blog.title}`}
     >
       <div className="space-y-3">
         <h3 className="text-lg font-semibold text-white group-hover:text-[var(--primaryColor)] transition-colors duration-300">
@@ -45,13 +47,15 @@ const BlogCard = ({ blog, onReadMore }: BlogCardProps) => {
           <span className="text-xs text-gray-500">
             {getFormattedDate(blog.createdAt)}
           </span>
-          
-          <button className="text-xs font-semibold text-[var(--primaryColor)] hover:translate-x-1 transition-transform duration-300">
+          <button 
+            className="text-xs font-semibold text-[var(--primaryColor)] hover:translate-x-1 transition-transform duration-300"
+            aria-label={`Read more about: ${blog.title}`}
+          >
             Read More →
           </button>
         </div>
       </div>
-    </motion.div>
+    </motion.article>
   );
 };
 
